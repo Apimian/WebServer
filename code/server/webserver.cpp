@@ -16,17 +16,17 @@ WebServer::WebServer(
             port_(port), openLinger_(OptLinger), timeoutMS_(timeoutMS), isClose_(false),
             timer_(new HeapTimer()), threadpool_(new ThreadPool(threadNum)), epoller_(new Epoller())
     {
-    srcDir_ = getcwd(nullptr, 256);
+    srcDir_ = getcwd(nullptr, 256); // 获取当前工作目录，并设置资源目录
     assert(srcDir_);
     strncat(srcDir_, "/resources/", 16);
-    HttpConn::userCount = 0;
+    HttpConn::userCount = 0;// 初始化HttpConn用户计数和资源目录
     HttpConn::srcDir = srcDir_;
-    SqlConnPool::Instance()->Init("localhost", sqlPort, sqlUser, sqlPwd, dbName, connPoolNum);
+    SqlConnPool::Instance()->Init("localhost", sqlPort, sqlUser, sqlPwd, dbName, connPoolNum);// 初始化SQL连接池
 
-    InitEventMode_(trigMode);
-    if(!InitSocket_()) { isClose_ = true;}
+    InitEventMode_(trigMode);// 初始化事件处理模式
+    if(!InitSocket_()) { isClose_ = true;}// 初始化套接字并检查是否初始化成功
 
-    if(openLog) {
+    if(openLog) { // 初始化日志系统（如果启用）
         Log::Instance()->init(logLevel, "./log", ".log", logQueSize);
         if(isClose_) { LOG_ERROR("========== Server init error!=========="); }
         else {
@@ -43,10 +43,10 @@ WebServer::WebServer(
 }
 
 WebServer::~WebServer() {
-    close(listenFd_);
+    close(listenFd_);// 关闭监听套接字并释放资源
     isClose_ = true;
     free(srcDir_);
-    SqlConnPool::Instance()->ClosePool();
+    SqlConnPool::Instance()->ClosePool();// 关闭连接池
 }
 
 void WebServer::InitEventMode_(int trigMode) {
